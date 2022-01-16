@@ -13,8 +13,7 @@ public class Absinthe extends S2Agent {
     public void onGameFullStart() {
         long startTime = System.nanoTime();
         AGame.startFrame(observation(), actions(), query(), debug());
-
-
+        AGameInfoCache.startFrame();
 
     }
 
