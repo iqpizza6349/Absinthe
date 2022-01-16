@@ -90,7 +90,7 @@ public class AGameInfoCache {
 
     }
 
-    static void onEndFrame() {
+    static void endFrame() {
 
     }
 
