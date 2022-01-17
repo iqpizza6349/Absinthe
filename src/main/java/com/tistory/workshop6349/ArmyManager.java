@@ -11,17 +11,17 @@ import com.tistory.workshop6349.unitcontrollers.Probe;
 public class ArmyManager {
 
     public static Point2d target;
-    public static boolean has_target = false;
+    public static boolean hasTarget;
     static {
         target = AScouting.closestEnemySpawn();
-        has_target = true;
+        hasTarget = true;
     }
 
-    public static void start_frame() {
+    public static void startFrame() {
 
     }
 
-    public static void on_frame() {
+    public static void onFrame() {
         outer: for (UnitInPool u: AGameInfoCache.getUnits(Alliance.SELF)) {
             if (target.distance(u.unit().getPosition().toPoint2d()) < 4) {
                 for (UnitInPool e: AGameInfoCache.getUnits(Alliance.ENEMY)) {
@@ -33,16 +33,16 @@ public class ArmyManager {
                         }
                     }
                 }
-                has_target = false;
-                break outer;
+                hasTarget = false;
+                break;
             }
         }
-        if (!has_target) {
+        if (!hasTarget) {
             for (UnitInPool e: AGameInfoCache.getUnits(Alliance.ENEMY)) {
                 if (e.unit().getType() != Units.PROTOSS_ADEPT_PHASE_SHIFT) {
                     if (!e.unit().getFlying().orElse(false) || AGameInfoCache.countFriendly(Units.PROTOSS_VOIDRAY) > 0) {
                         target = e.unit().getPosition().toPoint2d();
-                        has_target = true;
+                        hasTarget = true;
                         break;
                     }
                 }
@@ -116,7 +116,7 @@ public class ArmyManager {
 
     }
 
-    public static void end_frame() {
+    public static void endFrame() {
 
     }
 }
