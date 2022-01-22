@@ -1,0 +1,99 @@
+package com.tistory.workshop6349.economy;
+
+import com.github.ocraft.s2client.protocol.data.Abilities;
+import com.github.ocraft.s2client.protocol.unit.Alliance;
+import com.tistory.workshop6349.game.AbsintheUnit;
+import com.tistory.workshop6349.game.GameInfoCache;
+import com.tistory.workshop6349.game.RaceInterface;
+
+public class EconomyManager {
+
+    public static void on_frame() {
+        // worker transfer code
+        for (Base b : BaseManager.bases) {
+            if (!b.has_friendly_command_structure()) continue;
+            if (b.command_structure.assigned_workers() > b.command_structure.ideal_workers()) {
+                for (Base target: BaseManager.bases) {
+                    if (!target.has_friendly_command_structure()) continue;
+                    if (target.minerals.size() == 0) continue;
+                    if (target.command_structure.assigned_workers() + GameInfoCache.in_progress(RaceInterface.get_race_worker()) < target.command_structure.ideal_workers()) {
+                        for (AbsintheUnit worker : GameInfoCache.get_units(Alliance.SELF, RaceInterface.get_race_worker())) {
+                            if (worker.distance(b.location) < 10) {
+                                // TODO remove try catch, fix crashing
+                                try {
+                                    if (worker.ability() == Abilities.HARVEST_GATHER && GameInfoCache.get_unit(worker.orders().get(0).getTargetedUnitTag().get()).minerals() > 0) {
+                                        worker.use_ability(Abilities.SMART, target.minerals.get(0));
+                                        return;
+                                    }
+                                } catch (Exception e) {
+                                    worker.use_ability(Abilities.SMART, target.minerals.get(0));
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static float larva_rate() {
+        int total = 0;
+        for (Base b: BaseManager.bases) {
+            if (b.has_friendly_command_structure()) {
+                total++;
+                if (b.has_queen()) total++;
+            }
+        }
+        return total;
+    }
+
+    public static void assign_worker(AbsintheUnit ally) {
+        for (Base b : BaseManager.bases) {
+            if (b.has_friendly_command_structure() && b.command_structure.done()) {
+                if (b.command_structure.assigned_workers() < b.command_structure.ideal_workers()) {
+                    if (b.minerals.size() > 0) {
+                        ally.use_ability(Abilities.SMART, b.minerals.get(0));
+                        return;
+                    }
+                }
+            }
+        }
+        for (Base b : BaseManager.bases) {
+            if (b.has_friendly_command_structure() && b.command_structure.done()) {
+                if (b.command_structure.assigned_workers()< b.command_structure.ideal_workers() * 1.5) {
+                    if (b.minerals.size() > 0) {
+                        ally.use_ability(Abilities.SMART, b.minerals.get(0));
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    public static int free_minerals() {
+        int result = 0;
+        for (Base b: BaseManager.bases) {
+            if (b.has_friendly_command_structure())  {
+                int total_minerals = 0;
+                for (AbsintheUnit mineral : b.minerals) {
+                    if (mineral.minerals() > 150) {
+                        total_minerals++;
+                    }
+                }
+                result += total_minerals * 2 - b.command_structure.assigned_workers();
+            }
+        }
+        return result;
+    }
+
+    public static int total_minerals() {
+        int result = 0;
+        for (Base b: BaseManager.bases) {
+            if (b.has_friendly_command_structure())  {
+                result += b.minerals.size() * 2;
+            }
+        }
+        return result;
+    }
+}
